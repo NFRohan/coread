@@ -1,0 +1,19 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "coread",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-30",
+  "compatibility_flags": ["nodejs_compat"],
+  // The companion page. Anything that isn't a file here (sync protocol, /api) reaches the Worker.
+  "assets": { "directory": "./public" },
+  // database_id is filled in automatically on the first `wrangler deploy`.
+  "d1_databases": [{ "binding": "DB", "database_name": "coread", "migrations_dir": "migrations" }],
+  "vars": {
+    "TIMEZONE": "Asia/Dhaka",   // default for stats; a person can override it with "tz" in USERS
+    "SPOILER_GAP": "0.05"       // 5% ahead in a shared book triggers the spoiler guard
+  },
+  // Weekly recap: Sunday 15:00 UTC (21:00 in Dhaka).
+  "triggers": { "crons": ["0 15 * * SUN"] },
+  "observability": { "enabled": true, "head_sampling_rate": 1 }
+  // Secrets (wrangler secret put): USERS, SESSION_SECRET, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, optional VAPID_SUBJECT. See README.
+}

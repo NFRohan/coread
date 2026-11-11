@@ -1,0 +1,12 @@
+# Copy to .dev.vars for local development (`npm run dev`). Never commit .dev.vars.
+USERS=[{"username":"rohan","name":"Rohan"},{"username":"her","name":"Her name"}]
+SESSION_SECRET=any-long-random-string-for-local-dev
+# Local-only test hooks: log push notifications instead of sending them, and let tests set the clock.
+PUSH_DRY_RUN=1
+ALLOW_TIME_OVERRIDE=1
+# Skip Open Library lookups in local tests (production looks covers up).
+COVER_LOOKUP=off
+# Web Push key pair: run `npm run vapid` and paste its two lines here. VAPID_SUBJECT is optional (mailto: or https: contact).
+VAPID_PUBLIC_KEY=CHANGE-ME
+VAPID_PRIVATE_KEY=CHANGE-ME
+VAPID_SUBJECT=

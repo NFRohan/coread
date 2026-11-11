@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>coread</title>
+  <meta name="description" content="Reading together, apart.">
+  <meta name="theme-color" content="#F5EFE4" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#1A1613" media="(prefers-color-scheme: dark)">
+  <script>try { const t = localStorage.getItem("coread-theme"); if (t === "light" || t === "dark") document.documentElement.dataset.theme = t; } catch {}</script>
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" href="/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,500;0,7..72,600;1,7..72,400;1,7..72,500&family=Source+Sans+3:wght@400;600&display=swap">
+  <link rel="stylesheet" href="https://unpkg.com/lucide-static@0.460.0/font/lucide.css">
+  <link rel="stylesheet" href="/app.css">
+</head>
+<body>
+  <!-- sign-in -->
+  <section id="login-view" class="signin" hidden>
+    <div class="signin-inner">
+      <div class="wordmark lg"><span class="mark" aria-hidden="true"><i></i><i></i></span>coread</div>
+      <form id="login-form" class="signin-card">
+        <span class="ribbon" aria-hidden="true"></span>
+        <div class="signin-head">
+          <h1>Pick up where you left off.</h1>
+          <p>Use the username and password from Readest's sync settings.</p>
+        </div>
+        <label class="field"><span>Username</span><input name="username" autocomplete="username" autocapitalize="none" spellcheck="false" required></label>
+        <label class="field"><span>Password</span><input name="password" type="password" autocomplete="current-password" required></label>
+        <div id="login-error" class="form-error" role="alert" hidden><i class="icon-circle-alert" aria-hidden="true"></i><span></span></div>
+        <button class="btn-primary wide" type="submit">Open coread<i class="icon-book-open" aria-hidden="true"></i></button>
+      </form>
+      <p class="signin-foot">For two readers, wherever you both are.</p>
+    </div>
+  </section>
+
+  <!-- app shell -->
+  <div id="shell" hidden>
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div class="wordmark"><span class="mark" aria-hidden="true"><i></i><i></i></span>coread</div>
+        <button id="settings-btn" class="ibtn bar-btn" type="button" aria-label="Settings and setup" title="Settings and setup"><i class="icon-settings" aria-hidden="true"></i></button>
+        <button id="nudge" class="btn-primary" type="button"><i class="icon-hand-heart" aria-hidden="true"></i>Nudge</button>
+      </div>
+      <div class="tabs-row">
+        <nav id="viewtabs" class="seg tabs" role="tablist" aria-label="View">
+          <button role="tab" data-view="today" aria-selected="true"><i class="icon-book-open" aria-hidden="true"></i><span>Now</span></button>
+          <button role="tab" data-view="habits" aria-selected="false"><i class="icon-chart-column" aria-hidden="true"></i><span>Habits</span></button>
+          <button role="tab" data-view="sessions" aria-selected="false"><i class="icon-history" aria-hidden="true"></i><span>Sessions</span></button>
+          <button role="tab" data-view="activity" aria-selected="false"><i class="icon-activity" aria-hidden="true"></i><span>Activity</span></button>
+          <button role="tab" data-view="shelves" aria-selected="false"><i class="icon-library" aria-hidden="true"></i><span>Shelves</span></button>
+        </nav>
+      </div>
+    </header>
+
+    <main class="wrap main">
+      <!-- Today: four tabs (Now, Habits, Sessions, Activity) share #dash and one /api/state -->
+      <div id="dash" class="stack">
+        <section class="block" data-panel="today" aria-label="Who's reading">
+          <div id="presence" class="list"></div>
+          <div id="together"></div>
+        </section>
+
+        <section id="first-run" class="first-run" data-panel="today" hidden>
+          <span class="first-run-icon"><i class="icon-book-open" aria-hidden="true"></i></span>
+          <h2>Your first page is still to come.</h2>
+          <p>Open any book in Readest. As soon as it syncs, it'll appear here, and so will <span id="first-run-partner">theirs</span>.</p>
+          <p class="aside">Habits, sessions and shelves fill in as you read.</p>
+        </section>
+
+        <section id="books-section" class="block" data-panel="today" aria-labelledby="books-h">
+          <h2 id="books-h">Books</h2>
+          <div id="books" class="list"></div>
+        </section>
+
+        <p id="habits-empty" class="empty" data-panel="habits" hidden>Habits fill in once one of you has read a little.</p>
+        <section id="habits-section" class="block" data-panel="habits" aria-labelledby="habits-h">
+          <h2 id="habits-h">Reading habits</h2>
+          <div id="habits" class="card habits"></div>
+          <div class="card chart-card">
+            <div class="chart-head">
+              <h3>Minutes read per day</h3>
+              <div id="daily-legend" class="legend"></div>
+            </div>
+            <div id="daily" class="chart-box"></div>
+            <button id="daily-toggle" class="link-btn" type="button"><i class="icon-table" aria-hidden="true"></i><span>Show as table</span></button>
+          </div>
+          <div class="card chart-card">
+            <div class="chart-head">
+              <div><h3>When you read</h3><div class="sub">Last 4 weeks</div></div>
+              <div id="heat-tabs" class="seg small" role="tablist" aria-label="Whose heatmap"></div>
+            </div>
+            <div id="heat" class="chart-box"></div>
+            <div id="heat-scale" class="scale"></div>
+          </div>
+        </section>
+
+        <p id="sessions-empty" class="empty" data-panel="sessions" hidden>No reading sessions yet. Each sitting with a book shows up here.</p>
+        <section id="sessions-section" class="block" data-panel="sessions" aria-labelledby="sessions-h">
+          <h2 id="sessions-h">Sessions</h2>
+          <div id="sessions" class="card rows"></div>
+        </section>
+
+        <section class="block" data-panel="activity" aria-labelledby="activity-h">
+          <h2 id="activity-h">Activity</h2>
+          <div id="activity" class="activity"></div>
+        </section>
+        <p class="foot" id="updated"></p>
+      </div>
+
+      <!-- Settings & setup -->
+      <div id="settings-view" class="stack" hidden>
+        <div class="block tight">
+          <button id="settings-back" class="text-btn back" type="button"><i class="icon-arrow-left" aria-hidden="true"></i>Back</button>
+          <h1 class="page-title">Settings &amp; setup</h1>
+          <p class="lede" id="settings-lede">Everything you need to connect a new device.</p>
+        </div>
+        <div id="settings-body" class="stack"></div>
+      </div>
+
+      <!-- Shelves -->
+      <div id="shelves-view" class="stack" hidden>
+        <div class="block tight">
+          <div id="shelf-people" class="seg" role="tablist" aria-label="Whose shelves"></div>
+          <p id="year-line" class="year-line"></p>
+        </div>
+        <section class="block" aria-labelledby="sh-reading"><div class="shelf-head"><h2 id="sh-reading">Currently reading</h2><span id="cnt-reading"></span></div><div id="shelf-reading" class="list"></div></section>
+        <section class="block" aria-labelledby="sh-wish"><div class="shelf-head"><h2 id="sh-wish">Want to read</h2><span id="cnt-wish"></span></div>
+          <form id="wish-form" class="wish-form" hidden>
+            <input name="title" placeholder="Title" aria-label="Title" maxlength="200" required class="full">
+            <input name="authors" placeholder="Author (optional)" aria-label="Author" maxlength="300">
+            <input name="note" placeholder="Why? (optional)" aria-label="Why" maxlength="500">
+            <button type="submit" class="btn-outline full"><i class="icon-plus" aria-hidden="true"></i>Add</button>
+          </form>
+          <div id="shelf-wish" class="list"></div></section>
+        <section class="block" aria-labelledby="sh-done"><div class="shelf-head"><h2 id="sh-done">Finished</h2><span id="cnt-finished"></span></div><div id="shelf-finished" class="list"></div></section>
+        <section class="block" aria-labelledby="sh-paused"><div class="shelf-head"><h2 id="sh-paused">Paused &amp; put down</h2><span id="cnt-paused"></span></div><div id="shelf-paused" class="list"></div></section>
+      </div>
+    </main>
+  </div>
+
+  <div id="tooltip" class="tooltip" role="status" hidden></div>
+  <div id="toast" class="toast" role="status" hidden><i class="icon-check" aria-hidden="true"></i><span></span></div>
+  <script src="/app.js" defer></script>
+</body>
+</html>
